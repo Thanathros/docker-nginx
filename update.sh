@@ -24,20 +24,15 @@ declare -A pkg=(
 #    [stable]=2
 )
 
-defaultdebian='buster'
-declare -A debian=(
-    #[stable]='stretch'
-)
-
-defaultalpine='3.13'
-declare -A alpine=(
-#    [stable]='3.11'
+defaultubuntu='focal'
+declare -A ubuntu=(
+#   [stable]='bionic'
 )
 
 # When we bump njs version in a stable release we don't move the tag in the
 # mercurial repo.  This setting allows us to specify a revision to check out
 # when building alpine packages on architectures not supported by nginx.org
-defaultrev='${NGINX_VERSION}-${PKG_RELEASE}'
+defaultrev='${NGINX_VERSION}-${PKG_RELEASE}-ubuntu'
 declare -A rev=(
     #[stable]='-r 500'
 )
@@ -45,19 +40,9 @@ declare -A rev=(
 get_packages() {
     local distro="$1"; shift;
     local branch="$1"; shift;
-    local perl=
+    local perl="nginx-module-perl"
     local r=
-    local sep=
-
-    case "$distro:$branch" in
-        alpine*:*)
-            r="r"
-            sep="."
-            ;;
-        debian*:*)
-            sep="+"
-         ;;
-    esac
+    local sep="+"
 
     case "$distro" in
         *-perl)
@@ -88,7 +73,7 @@ get_packagever() {
     local branch="$1"; shift;
     local suffix=
 
-    [ "${distro}" = "debian" ] && suffix="~${debianver}"
+    [ "${distro}" = "ubuntu" ] && suffix="~${ubuntuver}"
 
     echo ${pkg[$branch]:-$defaultpkg}${suffix}
 }
@@ -105,8 +90,7 @@ __EOF__
 
 for branch in "${branches[@]}"; do
     for variant in \
-        alpine{,-perl} \
-        debian{,-perl} \
+        ubuntu{,-perl} \
     ; do
         echo "$branch: $variant"
         dir="$branch/$variant"
@@ -117,8 +101,7 @@ for branch in "${branches[@]}"; do
         template="Dockerfile-${variant%-perl}.template"
         { generated_warning; cat "$template"; } > "$dir/Dockerfile"
 
-        debianver="${debian[$branch]:-$defaultdebian}"
-        alpinever="${alpine[$branch]:-$defaultalpine}"
+        ubuntuver="${ubuntu[$branch]:-$defaultubuntu}"
         nginxver="${nginx[$branch]}"
         njsver="${njs[${branch}]:-$defaultnjs}"
         pkgver="${pkg[${branch}]:-$defaultpkg}"
@@ -129,8 +112,7 @@ for branch in "${branches[@]}"; do
         packagever=$(get_packagever "$variant" "$branch")
 
         sed -i \
-            -e 's,%%ALPINE_VERSION%%,'"$alpinever"',' \
-            -e 's,%%DEBIAN_VERSION%%,'"$debianver"',' \
+            -e 's,%%UBUNTU_VERSION%%,'"$ubuntuver"',' \
             -e 's,%%NGINX_VERSION%%,'"$nginxver"',' \
             -e 's,%%NJS_VERSION%%,'"$njsver"',' \
             -e 's,%%PKG_RELEASE%%,'"$packagever"',' \

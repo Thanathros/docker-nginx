@@ -9,7 +9,7 @@ aliases=(
 
 self="$(basename "$BASH_SOURCE")"
 cd "$(dirname "$(readlink -f "$BASH_SOURCE")")"
-base=debian
+base=ubuntu
 
 versions=( mainline stable )
 
@@ -36,10 +36,10 @@ dirCommit() {
 }
 
 cat <<-EOH
-# this file is generated via https://github.com/nginxinc/docker-nginx/blob/$(fileCommit "$self")/$self
+# this file is generated via https://github.com/thanathros/docker-nginx/blob/$(fileCommit "$self")/$self
 
-Maintainers: NGINX Docker Maintainers <docker-maint@nginx.com> (@nginxinc)
-GitRepo: https://github.com/nginxinc/docker-nginx.git
+Maintainer: Enno Ritz <enno.ritz@ort-online.net> (@thanathros)
+GitRepo: https://github.com/thanathros/docker-nginx.git
 EOH
 
 # prints "$2$1$3$1...$N"
@@ -63,12 +63,12 @@ for version in "${versions[@]}"; do
 	echo
 	cat <<-EOE
 		Tags: $(join ', ' "${versionAliases[@]}")
-		Architectures: amd64, arm32v5, arm32v7, arm64v8, i386, mips64le, ppc64le, s390x
+		Architectures: amd64, arm32v7, arm64v8, ppc64le, s390x
 		GitCommit: $commit
 		Directory: $version/$base
 	EOE
 
-	for variant in debian-perl; do
+	for variant in ubuntu-perl; do
 		commit="$(dirCommit "$version/$variant")"
 
 		variantAliases=( "${versionAliases[@]/%/-perl}" )
@@ -77,22 +77,7 @@ for version in "${versions[@]}"; do
 		echo
 		cat <<-EOE
 			Tags: $(join ', ' "${variantAliases[@]}")
-			Architectures: amd64, arm32v5, arm32v7, arm64v8, i386, mips64le, ppc64le, s390x
-			GitCommit: $commit
-			Directory: $version/$variant
-		EOE
-	done
-
-	for variant in alpine alpine-perl; do
-		commit="$(dirCommit "$version/$variant")"
-
-		variantAliases=( "${versionAliases[@]/%/-$variant}" )
-		variantAliases=( "${variantAliases[@]//latest-/}" )
-
-		echo
-		cat <<-EOE
-			Tags: $(join ', ' "${variantAliases[@]}")
-			Architectures: arm64v8, arm32v6, arm32v7, ppc64le, s390x, i386, amd64
+			Architectures: amd64, arm32v7, arm64v8, ppc64le, s390x
 			GitCommit: $commit
 			Directory: $version/$variant
 		EOE
