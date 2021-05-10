@@ -121,6 +121,7 @@ for branch in "${branches[@]}"; do
             -e 's,%%REVISION%%,'"$revver"',' \
             "$dir/Dockerfile"
 
+	mkdir -p "$dir/entrypoint/"
         cp -a entrypoint/*.sh "$dir/"
 
     done
